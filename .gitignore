@@ -1,0 +1,6 @@
+# binari
+*.exe
+*.syso
+
+# PDF di test / output
+*.pdf

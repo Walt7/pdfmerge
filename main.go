@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/ncruces/zenity"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
@@ -83,27 +84,28 @@ func guiMode() {
 		return
 	}
 
-	var prefixes []string
-	for p := range groups {
-		prefixes = append(prefixes, p)
+	// ordina per chiave (lowercase) per output stabile
+	var keys []string
+	for k := range groups {
+		keys = append(keys, k)
 	}
-	sort.Strings(prefixes)
+	sort.Strings(keys)
 
 	done := 0
-	for _, prefix := range prefixes {
-		g := groups[prefix]
-		if g["1"] == "" {
+	for _, k := range keys {
+		g := groups[k]
+		if g.files["1"] == "" {
 			continue // serve almeno la p1
 		}
-		out := prefix + ".unito.pdf"
+		out := g.name + ".unito.pdf"
 
-		msg := fmt.Sprintf("Gruppo: %s\n\n", prefix)
-		msg += fmt.Sprintf("• pag.1→fine :  %s   (intero)\n", g["1"])
-		if g["2"] != "" {
-			msg += fmt.Sprintf("• pag.2→fine :  %s   (senza 1ª pagina)\n", g["2"])
+		msg := fmt.Sprintf("Gruppo: %s\n\n", g.name)
+		msg += fmt.Sprintf("• pag.1→fine :  %s   (intero)\n", g.files["1"])
+		if g.files["2"] != "" {
+			msg += fmt.Sprintf("• pag.2→fine :  %s   (senza 1ª pagina)\n", g.files["2"])
 		}
-		if g["3"] != "" {
-			msg += fmt.Sprintf("• accodato   :  %s   (intero)\n", g["3"])
+		if g.files["3"] != "" {
+			msg += fmt.Sprintf("• accodato   :  %s   (intero)\n", g.files["3"])
 		}
 		msg += fmt.Sprintf("\nOutput:  %s\n\nProcedo con questa combinazione?", out)
 
@@ -119,8 +121,8 @@ func guiMode() {
 			return // finestra chiusa / errore -> esci
 		}
 
-		if err := merge(g["1"], g["2"], g["3"], filepath.Join(wd, out)); err != nil {
-			zenity.Error("Errore unione "+prefix+":\n"+err.Error(), zenity.Title(appTitle))
+		if err := merge(g.files["1"], g.files["2"], g.files["3"], filepath.Join(wd, out)); err != nil {
+			zenity.Error("Errore unione "+g.name+":\n"+err.Error(), zenity.Title(appTitle))
 			continue
 		}
 		done++
@@ -180,10 +182,18 @@ func guiManual(wd string) {
 	zenity.Info("Creato:\n"+out, zenity.Title(appTitle), zenity.InfoIcon)
 }
 
+// group rappresenta un gruppo nome.pN.pdf.
+type group struct {
+	name  string            // nome visualizzato/output (dal file p1 se presente)
+	files map[string]string // "1","2","3" -> nome file
+}
+
 // scanGroups trova i gruppi nome.pN.pdf nella directory.
-func scanGroups(dir string) map[string]map[string]string {
+// Il confronto del nome (prefisso) è CASE-INSENSITIVE: Pippo.p1.pdf e
+// pippo.p2.pdf finiscono nello stesso gruppo.
+func scanGroups(dir string) map[string]*group {
 	re := regexp.MustCompile(`(?i)^(.+)\.p([123])\.pdf$`)
-	groups := map[string]map[string]string{}
+	groups := map[string]*group{}
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return groups
@@ -197,10 +207,17 @@ func scanGroups(dir string) map[string]map[string]string {
 			continue
 		}
 		prefix, part := m[1], m[2]
-		if groups[prefix] == nil {
-			groups[prefix] = map[string]string{}
+		key := strings.ToLower(prefix) // confronto case-insensitive
+		g := groups[key]
+		if g == nil {
+			g = &group{name: prefix, files: map[string]string{}}
+			groups[key] = g
 		}
-		groups[prefix][part] = e.Name()
+		g.files[part] = e.Name()
+		// usa il nome del file p1 come nome di riferimento per l'output
+		if part == "1" {
+			g.name = prefix
+		}
 	}
 	return groups
 }

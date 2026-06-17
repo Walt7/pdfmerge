@@ -12,6 +12,8 @@ Piccola utility in Go per unire fino a 3 PDF con una logica fissa, pensata per f
 
 `f2` e `f3` sono opzionali. Se `f2` ha una sola pagina viene ignorato (dopo aver tolto la prima non resta nulla).
 
+Se usi solo **f1 + f3** (senza f2) il risultato è un **merge completo**: f1 intero seguito da f3 intero, senza scartare alcuna pagina.
+
 ## Modi d'uso
 
 ### 1. Interfaccia grafica (nessun argomento)
@@ -22,7 +24,7 @@ Doppio click sull'eseguibile (oppure lancio senza argomenti):
 pdfmerge
 ```
 
-- Scansiona la cartella corrente cercando gruppi di file nominati `nome.p1.pdf`, `nome.p2.pdf`, `nome.p3.pdf`.
+- Scansiona la cartella corrente cercando gruppi di file nominati `nome.p1.pdf`, `nome.p2.pdf`, `nome.p3.pdf`. Il confronto del nome è **case-insensitive**: `Pippo.p1.pdf` e `pippo.p2.pdf` finiscono nello stesso gruppo.
 - Per **ogni** gruppo trovato apre una finestra con la combinazione proposta e chiede conferma (**Unisci** / **Salta**).
 - Output: `nome.unito.pdf`.
 - Se non trova nessun gruppo apre un selettore file: scegli da 1 a 3 PDF (l'ordine di selezione = f1, f2, f3) e poi la destinazione.

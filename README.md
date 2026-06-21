@@ -1,6 +1,9 @@
-# pdfmerge
+# pdfmerge v2 (C#)
 
-Piccola utility in Go per unire fino a 3 PDF con una logica fissa, pensata per flussi di tipo *mail merge* (documento firmato + allegati).
+Utility Windows per unire fino a 3 PDF con logica fissa, pensata per flussi tipo
+*mail merge* (documento firmato + allegati). Riscrittura in **C# / WinForms**.
+
+> Branch `v2`. La versione 1.x in Go è sul branch `master`.
 
 ## Logica di unione
 
@@ -10,75 +13,56 @@ Piccola utility in Go per unire fino a 3 PDF con una logica fissa, pensata per f
 | **f2** | dalla pagina 2 alla fine (scarta la prima pagina) |
 | **f3** | tutte le pagine, accodate in fondo |
 
-`f2` e `f3` sono opzionali. Se `f2` ha una sola pagina viene ignorato (dopo aver tolto la prima non resta nulla).
+Usando solo **f1 + f3** (senza f2) si ottiene un **merge completo**, senza scartare pagine.
 
-Se usi solo **f1 + f3** (senza f2) il risultato è un **merge completo**: f1 intero seguito da f3 intero, senza scartare alcuna pagina.
+## Opzioni (nel popup)
 
-## Modi d'uso
+- **Salta pagine vuote** — rimuove le pagine senza testo/immagini/disegni (euristica sul content stream, via PdfSharp).
+- **Limita risoluzione immagini (DPI)** — ricampiona le immagini al DPI scelto. Richiede **Ghostscript** installato; se assente l'opzione è disabilitata.
 
-### 1. Interfaccia grafica (nessun argomento)
+## Uso
 
-Doppio click sull'eseguibile (oppure lancio senza argomenti):
+### Interfaccia grafica (doppio click / nessun argomento)
 
-```
-pdfmerge
-```
-
-- Scansiona la cartella corrente cercando gruppi di file nominati `nome.p1.pdf`, `nome.p2.pdf`, `nome.p3.pdf`. Il confronto del nome è **case-insensitive**: `Pippo.p1.pdf` e `pippo.p2.pdf` finiscono nello stesso gruppo.
-- Per **ogni** gruppo trovato apre una finestra con la combinazione proposta e chiede conferma (**Unisci** / **Salta**).
+- Scansiona la cartella corrente per gruppi `nome.p1.pdf`, `nome.p2.pdf`, `nome.p3.pdf`
+  (confronto nome **case-insensitive**).
+- Per ogni gruppo apre un form con la combinazione e le opzioni; bottoni **Unisci** / **Salta**.
 - Output: `nome.unito.pdf`.
-- Se non trova nessun gruppo apre un selettore file: scegli da 1 a 3 PDF (l'ordine di selezione = f1, f2, f3) e poi la destinazione.
+- Se non trova gruppi apre un selettore file (1–3 PDF, ordine = f1, f2, f3) + dialog "salva come".
 
-Esempio: con in cartella `documento.p1.pdf` e `documento.p2.pdf` propone l'unione e crea `documento.unito.pdf`.
-
-### 2. Riga di comando
+### Riga di comando
 
 ```
-pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o output.pdf]
-```
-
-- `-o` imposta il file di output (default `documento_unito.pdf`).
-- `-v` / `--version` stampa la versione ed esce.
-
-Esempio:
-
-```
-pdfmerge documento.p1.pdf documento.p2.pdf -o unito.pdf
+pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o out.pdf] [-skip-empty] [-dpi N]
+pdfmerge -v
 ```
 
 ## Build
 
-Richiede Go 1.21+.
+Richiede .NET SDK 9.
 
 ```
-go build -ldflags="-H windowsgui" -o pdfmerge.exe .
+dotnet build -c Release
+dotnet run --project src/PdfMerge
 ```
 
-Il flag `-H windowsgui` evita l'apertura della finestra console quando si avvia la GUI con doppio click. Per una build con output su console (utile in modalità CLI) ometterlo:
+Eseguibile single-file:
 
 ```
-go build -o pdfmerge.exe .
-```
-
-## Release automatiche
-
-Al push di un tag di versione (`v*`, es. `v1.2.0`) la GitHub Action in
-`.github/workflows/release.yml` compila `pdfmerge.exe` per Windows (con la
-versione iniettata dal tag) e lo allega automaticamente alla Release.
-
-```
-git tag -a v1.2.0 -m "v1.2.0"
-git push origin v1.2.0
+dotnet publish src/PdfMerge/PdfMerge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
 ## Dipendenze
 
-- [pdfcpu](https://github.com/pdfcpu/pdfcpu) — manipolazione PDF (trim, merge).
-- [ncruces/zenity](https://github.com/ncruces/zenity) — dialoghi nativi (no CGO).
+- [PdfSharp](https://www.pdfsharp.net/) — merge, split, ispezione content stream (pagine vuote).
+- [Ghostscript.NET](https://github.com/jhabjan/Ghostscript.NET) — downsampling immagini (richiede Ghostscript nativo installato).
+
+## Release automatiche
+
+Al push di un tag `v2*` (es. `v2.0.0`) la GitHub Action compila l'exe single-file
+Windows e lo allega alla Release.
 
 ## Convenzione nomi file
-
-Per la selezione automatica usa il pattern:
 
 ```
 <nome>.p1.pdf   -> f1 (intero)

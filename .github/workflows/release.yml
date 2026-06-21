@@ -1,10 +1,10 @@
-name: release
+name: release-v2
 
-# Builda e pubblica l'eseguibile quando viene pushato un tag di versione (es. v1.2.0)
+# Builda e pubblica l'eseguibile C# al push di un tag v2* (es. v2.0.0)
 on:
   push:
     tags:
-      - 'v*'
+      - 'v2*'
 
 permissions:
   contents: write
@@ -15,18 +15,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-dotnet@v4
         with:
-          go-version: 'stable'
+          dotnet-version: '9.0.x'
 
-      - name: Build pdfmerge.exe
+      - name: Publish single-file exe
         shell: pwsh
         run: |
           $v = "${{ github.ref_name }}" -replace '^v',''
-          go build -ldflags "-H windowsgui -X main.version=$v" -o pdfmerge.exe .
+          dotnet publish src/PdfMerge/PdfMerge.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:Version=$v `
+            -o publish
 
       - name: Pubblica la release con l'exe allegato
         uses: softprops/action-gh-release@v2
         with:
-          files: pdfmerge.exe
+          files: publish/pdfmerge.exe
           generate_release_notes: true

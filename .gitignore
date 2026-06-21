@@ -1,7 +1,10 @@
-# binari
-*.exe
-*.syso
+# .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
 
-# PDF di test / output
+# output PDF di test
 *.pdf
-*.exe~

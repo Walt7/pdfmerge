@@ -18,7 +18,7 @@ Usando solo **f1 + f3** (senza f2) si ottiene un **merge completo**, senza scart
 ## Opzioni (nel popup)
 
 - **Salta pagine vuote** — rimuove le pagine senza testo/immagini/disegni (euristica sul content stream, via PdfSharp).
-- **Limita risoluzione immagini (DPI)** — ricampiona le immagini al DPI scelto. Richiede **Ghostscript** installato; se assente l'opzione è disabilitata.
+- **Comprimi immagini scannerizzate** — riduce le immagini oltre un lato massimo (px) e le ricomprime in JPEG, per ottenere PDF più piccoli (CIE/documenti scannerizzati). Puro .NET (iText7 + System.Drawing), nessuna dipendenza nativa.
 
 ## Uso
 
@@ -33,9 +33,12 @@ Usando solo **f1 + f3** (senza f2) si ottiene un **merge completo**, senza scart
 ### Riga di comando
 
 ```
-pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o out.pdf] [-skip-empty] [-dpi N]
+pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o out.pdf] [-skip-empty] [-compress] [-maxpx N] [-quality N]
 pdfmerge -v
 ```
+
+- `-compress` attiva la compressione immagini (default lato max 1600 px, qualità 80).
+- `-maxpx N` lato massimo in pixel. `-quality N` qualità JPEG (1-100).
 
 ## Build
 
@@ -55,7 +58,10 @@ dotnet publish src/PdfMerge/PdfMerge.csproj -c Release -r win-x64 --self-contain
 ## Dipendenze
 
 - [PdfSharp](https://www.pdfsharp.net/) — merge, split, ispezione content stream (pagine vuote).
-- [Ghostscript.NET](https://github.com/jhabjan/Ghostscript.NET) — downsampling immagini (richiede Ghostscript nativo installato).
+- [iText7](https://github.com/itext/itext-dotnet) (**AGPL**) — ricompressione immagini per ridurre la dimensione del PDF.
+- System.Drawing.Common — ridimensionamento/encoding JPEG (Windows).
+
+> Nota licenza: iText7 è **AGPL**. Il repo è pubblico, coerente con i termini AGPL.
 
 ## Release automatiche
 

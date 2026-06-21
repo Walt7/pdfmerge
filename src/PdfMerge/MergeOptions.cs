@@ -4,6 +4,13 @@ namespace PdfMerge;
 public class MergeOptions
 {
     public bool SkipEmpty { get; set; }
-    public bool LimitDpi { get; set; }
-    public int Dpi { get; set; } = 150;
+
+    /// Comprimi le immagini scannerizzate (riduce dimensione file).
+    public bool Compress { get; set; }
+
+    /// Lato massimo in pixel: le immagini più grandi vengono ridotte.
+    public int MaxSide { get; set; } = 1600;
+
+    /// Qualità JPEG (1-100) usata in ricompressione.
+    public int JpegQuality { get; set; } = 80;
 }

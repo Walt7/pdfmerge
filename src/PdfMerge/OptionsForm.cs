@@ -2,18 +2,18 @@ using System.Windows.Forms;
 
 namespace PdfMerge;
 
-/// Form di conferma con i parametri (salto pagine vuote, limita DPI).
+/// Form di conferma con i parametri (salto pagine vuote, compressione immagini).
 public class OptionsForm : Form
 {
     private readonly CheckBox _chkEmpty;
-    private readonly CheckBox _chkDpi;
-    private readonly NumericUpDown _nudDpi;
+    private readonly CheckBox _chkCompress;
+    private readonly NumericUpDown _nudMaxPx;
 
     public MergeOptions Options { get; } = new();
 
     public OptionsForm(string title, string combo, string outName)
     {
-        bool gsAvail = PdfEngine.GhostscriptAvailable();
+        bool compAvail = PdfEngine.CompressionAvailable();
 
         Text = title;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -44,39 +44,39 @@ public class OptionsForm : Form
             AutoSize = true,
         };
 
-        _chkDpi = new CheckBox
+        _chkCompress = new CheckBox
         {
-            Text = "Limita risoluzione immagini",
+            Text = "Comprimi immagini scannerizzate",
             Location = new Point(14, 54),
             AutoSize = true,
-            Enabled = gsAvail,
+            Enabled = compAvail,
         };
 
-        _nudDpi = new NumericUpDown
+        _nudMaxPx = new NumericUpDown
         {
-            Location = new Point(230, 52),
+            Location = new Point(250, 52),
             Width = 80,
-            Minimum = 30,
-            Maximum = 1200,
-            Value = 150,
-            Increment = 10,
+            Minimum = 200,
+            Maximum = 6000,
+            Value = 1600,
+            Increment = 100,
             Enabled = false,
         };
-        var lblDpi = new Label { Text = "DPI", Location = new Point(316, 54), AutoSize = true };
+        var lblPx = new Label { Text = "px lato max", Location = new Point(336, 54), AutoSize = true };
 
-        _chkDpi.CheckedChanged += (_, _) => _nudDpi.Enabled = _chkDpi.Checked;
+        _chkCompress.CheckedChanged += (_, _) => _nudMaxPx.Enabled = _chkCompress.Checked;
 
         var lblNote = new Label
         {
-            Text = gsAvail
-                ? "Il DPI ricampiona le immagini (richiede Ghostscript)."
-                : "Ghostscript non trovato: opzione DPI non disponibile.",
+            Text = compAvail
+                ? "Riduce le immagini grandi e le ricomprime in JPEG (PDF più piccolo)."
+                : "Compressione disponibile solo su Windows.",
             Location = new Point(14, 82),
             Size = new Size(460, 20),
-            ForeColor = gsAvail ? SystemColors.GrayText : Color.Firebrick,
+            ForeColor = compAvail ? SystemColors.GrayText : Color.Firebrick,
         };
 
-        grp.Controls.AddRange(new Control[] { _chkEmpty, _chkDpi, _nudDpi, lblDpi, lblNote });
+        grp.Controls.AddRange(new Control[] { _chkEmpty, _chkCompress, _nudMaxPx, lblPx, lblNote });
 
         var btnOk = new Button
         {
@@ -101,10 +101,10 @@ public class OptionsForm : Form
         FormClosing += (_, _) =>
         {
             Options.SkipEmpty = _chkEmpty.Checked;
-            if (gsAvail && _chkDpi.Checked)
+            if (compAvail && _chkCompress.Checked)
             {
-                Options.LimitDpi = true;
-                Options.Dpi = (int)_nudDpi.Value;
+                Options.Compress = true;
+                Options.MaxSide = (int)_nudMaxPx.Value;
             }
         };
     }

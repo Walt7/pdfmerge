@@ -83,12 +83,19 @@ internal static class Program
                 case "-skip-empty":
                     opt.SkipEmpty = true;
                     break;
-                case "-dpi":
-                    if (i + 1 < args.Length && int.TryParse(args[++i], out var d) && d > 0)
+                case "-compress":
+                    opt.Compress = true;
+                    break;
+                case "-maxpx":
+                    if (i + 1 < args.Length && int.TryParse(args[++i], out var mp) && mp > 0)
                     {
-                        opt.LimitDpi = true;
-                        opt.Dpi = d;
+                        opt.Compress = true;
+                        opt.MaxSide = mp;
                     }
+                    break;
+                case "-quality":
+                    if (i + 1 < args.Length && int.TryParse(args[++i], out var q) && q >= 1 && q <= 100)
+                        opt.JpegQuality = q;
                     break;
                 default:
                     files.Add(args[i]);
@@ -98,7 +105,7 @@ internal static class Program
 
         if (files.Count == 0)
         {
-            Console.Error.WriteLine("uso: pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o out.pdf] [-skip-empty] [-dpi N]");
+            Console.Error.WriteLine("uso: pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o out.pdf] [-skip-empty] [-compress] [-maxpx N] [-quality N]");
             return 1;
         }
 

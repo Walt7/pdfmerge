@@ -26,9 +26,18 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
-const appTitle = "pdfmerge"
+// version è impostabile a build-time:  -ldflags "-X main.version=1.2.0"
+var version = "1.1.0"
+var appTitle = "pdfmerge v" + version
 
 func main() {
+	for _, a := range os.Args[1:] {
+		if a == "-v" || a == "--version" {
+			fmt.Println("pdfmerge", version)
+			return
+		}
+	}
+
 	files, outFlag := parseArgs(os.Args[1:])
 
 	if len(files) == 0 {
@@ -99,13 +108,14 @@ func guiMode() {
 		}
 		out := g.name + ".unito.pdf"
 
-		msg := fmt.Sprintf("Gruppo: %s\n\n", g.name)
-		msg += fmt.Sprintf("• pag.1→fine :  %s   (intero)\n", g.files["1"])
+		msg := fmt.Sprintf("pdfmerge v%s\n\n", version)
+		msg += fmt.Sprintf("Gruppo: %s\n\n", g.name)
+		msg += fmt.Sprintf("- pag.1-fine :  %s   (intero)\n", g.files["1"])
 		if g.files["2"] != "" {
-			msg += fmt.Sprintf("• pag.2→fine :  %s   (senza 1ª pagina)\n", g.files["2"])
+			msg += fmt.Sprintf("- pag.2-fine :  %s   (senza prima pagina)\n", g.files["2"])
 		}
 		if g.files["3"] != "" {
-			msg += fmt.Sprintf("• accodato   :  %s   (intero)\n", g.files["3"])
+			msg += fmt.Sprintf("- accodato   :  %s   (intero)\n", g.files["3"])
 		}
 		msg += fmt.Sprintf("\nOutput:  %s\n\nProcedo con questa combinazione?", out)
 

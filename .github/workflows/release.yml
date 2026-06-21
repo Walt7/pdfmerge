@@ -1,0 +1,32 @@
+name: release
+
+# Builda e pubblica l'eseguibile quando viene pushato un tag di versione (es. v1.2.0)
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Build pdfmerge.exe
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}" -replace '^v',''
+          go build -ldflags "-H windowsgui -X main.version=$v" -o pdfmerge.exe .
+
+      - name: Pubblica la release con l'exe allegato
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pdfmerge.exe
+          generate_release_notes: true

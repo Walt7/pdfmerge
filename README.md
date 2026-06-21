@@ -38,6 +38,7 @@ pdfmerge <f1.pdf> [f2.pdf] [f3.pdf] [-o output.pdf]
 ```
 
 - `-o` imposta il file di output (default `documento_unito.pdf`).
+- `-v` / `--version` stampa la versione ed esce.
 
 Esempio:
 
@@ -57,6 +58,17 @@ Il flag `-H windowsgui` evita l'apertura della finestra console quando si avvia 
 
 ```
 go build -o pdfmerge.exe .
+```
+
+## Release automatiche
+
+Al push di un tag di versione (`v*`, es. `v1.2.0`) la GitHub Action in
+`.github/workflows/release.yml` compila `pdfmerge.exe` per Windows (con la
+versione iniettata dal tag) e lo allega automaticamente alla Release.
+
+```
+git tag -a v1.2.0 -m "v1.2.0"
+git push origin v1.2.0
 ```
 
 ## Dipendenze

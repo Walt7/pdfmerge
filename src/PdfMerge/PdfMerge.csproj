@@ -10,6 +10,8 @@
     <RootNamespace>PdfMerge</RootNamespace>
     <Version>2.1.0</Version>
     <Product>pdfmerge</Product>
+    <Authors>Walt7</Authors>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

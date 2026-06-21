@@ -68,6 +68,10 @@ dotnet publish src/PdfMerge/PdfMerge.csproj -c Release -r win-x64 --self-contain
 Al push di un tag `v2*` (es. `v2.0.0`) la GitHub Action compila l'exe single-file
 Windows e lo allega alla Release.
 
+## Licenza
+
+[GNU AGPL-3.0-or-later](LICENSE) — richiesta dall'uso di iText7 (AGPL).
+
 ## Convenzione nomi file
 
 ```
